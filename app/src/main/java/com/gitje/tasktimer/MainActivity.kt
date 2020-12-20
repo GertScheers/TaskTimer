@@ -14,6 +14,23 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        val appDatabase = AppDatabase.getInstance(this)
+        val db = appDatabase.readableDatabase
+
+        val cursor = db.rawQuery("SELECT * FROM Tasks", null)
+        cursor.use {
+            while (it.moveToNext()){
+                //cycle through records
+                with(cursor){
+                    val id = getLong(0)
+                    val name = getString(1)
+                    val description = getString(2)
+                    val sortOrder = getString(3)
+                    val result = "ID: $id Name: $name Description: $description Sort order: $sortOrder"
+                }
+            }
+        }
+
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
