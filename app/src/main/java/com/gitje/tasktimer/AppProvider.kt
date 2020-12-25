@@ -4,6 +4,7 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
+import android.database.SQLException
 import android.database.sqlite.SQLiteQueryBuilder
 import android.net.Uri
 import android.util.Log
@@ -28,7 +29,7 @@ private const val TASK_DURATIONS_ID = 401
 
 val CONTENT_AUTHORITY_URI: Uri = Uri.parse("content://$CONTENT_AUTHORITY")
 
-class AppProvider: ContentProvider() {
+class AppProvider : ContentProvider() {
 
     private val uriMatcher by lazy { buildUriMatcher() }
 
@@ -108,7 +109,8 @@ class AppProvider: ContentProvider() {
         }
 
         val db = AppDatabase.getInstance(context).readableDatabase
-        val cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder)
+        val cursor =
+            queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder)
         Log.d(TAG, "query: rows in returned cursor = ${cursor.count}") // TODO remove this line
 
         return cursor
@@ -130,15 +132,51 @@ class AppProvider: ContentProvider() {
 
     }
 
-    override fun insert(uri: Uri, p1: ContentValues?): Uri? {
-        TODO("Not yet implemented")
+    override fun insert(uri: Uri, values: ContentValues?): Uri? {
+        Log.d(TAG, "Query: query called with uri: $uri")
+        val match = uriMatcher.match(uri)
+        Log.d(TAG, "Query: match is $match")
+
+        val recordId: Long
+        val returnUri: Uri
+        val context = requireContext(this)
+
+        when (match) {
+            TASKS -> {
+                val db = AppDatabase.getInstance(context).writableDatabase
+                recordId = db.insert(TasksContract.TABLE_NAME, null, values)
+                //"L" is needed to compare int to Long, since recordId = Long type
+                if (recordId != -1L)
+                    returnUri = TasksContract.buildUriFromId(recordId)
+                else
+                    throw SQLException("Failed to insert, Uri was: $uri")
+            }
+            TIMINGS -> {
+                val db = AppDatabase.getInstance(context).writableDatabase
+                recordId = db.insert(TimingsContract.TABLE_NAME, null, values)
+                if (recordId != -1L)
+                    returnUri = TimingsContract.buildUriFromId(recordId)
+                else
+                    throw SQLException("Failed to insert, Uri was: $uri")
+            }
+
+            else -> throw java.lang.IllegalArgumentException("unknown Uri: $uri")
+        }
+
+        Log.d(TAG, "Exiting Insert, returning $returnUri")
+        return returnUri
     }
 
     override fun delete(uri: Uri, p1: String?, p2: Array<out String>?): Int {
         TODO("Not yet implemented")
     }
 
-    override fun update(uri: Uri, values: ContentValues?, p2: String?, p3: Array<out String>?): Int {
+    override fun update(
+        uri: Uri,
+        values: ContentValues?,
+        p2: String?,
+        p3: Array<out String>?
+    ): Int {
         TODO("Not yet implemented")
     }
 }
