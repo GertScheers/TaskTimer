@@ -20,17 +20,18 @@ class MainActivity : AppCompatActivity() {
         val projection = arrayOf(TasksContract.Columns.TASK_NAME, TasksContract.Columns.TASK_SORT_ORDER)
         val sortColumn = TasksContract.Columns.TASK_SORT_ORDER
 
-        val cursor = contentResolver.query(TasksContract.CONTENT_URI, projection, null, null, sortColumn)
+        //val cursor = contentResolver.query(TasksContract.CONTENT_URI, projection, null, null, sortColumn)
+        val cursor = contentResolver.query(TasksContract.CONTENT_URI, null, null, null, sortColumn)
         Log.d(TAG, "***************************")
         cursor.use {
             while (it?.moveToNext()!!) {
                 //cycle through records
                 with(cursor) {
-                    //val id = this?.getLong(0)
-                    val name = getString(0)
-                    //val description = getString(2)
-                    val sortOrder = this?.getString(1)
-                    val result = "Name: $name Sort order: $sortOrder"
+                    val id = this?.getLong(0)
+                    val name = this?.getString(1)
+                    val description = this?.getString(2)
+                    val sortOrder = this?.getString(3)
+                    val result = "ID: $id | Name: $name | Description: $description | Sort order: $sortOrder |"
                     Log.d(TAG, "onCreate: reading data $result")
                 }
             }
