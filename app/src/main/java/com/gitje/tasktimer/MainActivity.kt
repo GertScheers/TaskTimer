@@ -1,12 +1,13 @@
 package com.gitje.tasktimer
 
+import android.content.ContentValues
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
 
 private const val TAG = "MainActivity"
 
@@ -17,7 +18,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        val projection = arrayOf(TasksContract.Columns.TASK_NAME, TasksContract.Columns.TASK_SORT_ORDER)
+        val projection =
+            arrayOf(TasksContract.Columns.TASK_NAME, TasksContract.Columns.TASK_SORT_ORDER)
         val sortColumn = TasksContract.Columns.TASK_SORT_ORDER
 
         //val cursor = contentResolver.query(TasksContract.CONTENT_URI, projection, null, null, sortColumn)
@@ -31,7 +33,8 @@ class MainActivity : AppCompatActivity() {
                     val name = this?.getString(1)
                     val description = this?.getString(2)
                     val sortOrder = this?.getString(3)
-                    val result = "ID: $id | Name: $name | Description: $description | Sort order: $sortOrder |"
+                    val result =
+                        "ID: $id | Name: $name | Description: $description | Sort order: $sortOrder |"
                     Log.d(TAG, "onCreate: reading data $result")
                 }
             }
@@ -43,6 +46,18 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
+    }
+
+    private fun testInsert() {
+        val values = ContentValues().apply {
+            put(TasksContract.Columns.TASK_NAME, "New Task 1")
+            put(TasksContract.Columns.TASK_DESCRIPTION, "Description 1")
+            put(TasksContract.Columns.TASK_SORT_ORDER, "2")
+        }
+
+        val uri = contentResolver.insert(TasksContract.CONTENT_URI, values)
+        Log.d(TAG, "New row id ( in uri ) is $uri")
+        Log.d(TAG, "id (in uri) is ${TasksContract.getId(uri!!)}")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
