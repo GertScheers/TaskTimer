@@ -18,6 +18,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        //testInsert()
+        //testUpdate()
+        //testUpdateBulk()
+        //testDelete()
+        //testDeleteBulk()
+
         val projection =
             arrayOf(TasksContract.Columns.TASK_NAME, TasksContract.Columns.TASK_SORT_ORDER)
         val sortColumn = TasksContract.Columns.TASK_SORT_ORDER
@@ -46,6 +52,44 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
+    }
+
+    private fun testDeleteBulk() {
+        val selection = TasksContract.Columns.TASK_SORT_ORDER + " = ?"
+        val selectionArgs = arrayOf("5")
+
+        val rowsAffected = contentResolver.delete(TasksContract.CONTENT_URI, selection, selectionArgs)
+        Log.d(TAG, "Rows deleted: $rowsAffected")
+    }
+
+    private fun testDelete() {
+        val taskUri = TasksContract.buildUriFromId(2)
+        val rowsAffected = contentResolver.delete(taskUri, null, null)
+        Log.d(TAG, "Rows deleted: $rowsAffected")
+    }
+
+    private fun testUpdateBulk() {
+        val values = ContentValues().apply {
+            put(TasksContract.Columns.TASK_SORT_ORDER, "5")
+            put(TasksContract.Columns.TASK_DESCRIPTION, "Testing")
+        }
+        val selection = TasksContract.Columns.TASK_SORT_ORDER + " = ?"
+        val selectionArgs = arrayOf("1")
+
+        //val taskUri = TasksContract.buildUriFromId(4)
+        val rowsAffected = contentResolver.update(TasksContract.CONTENT_URI, values, selection, selectionArgs)
+        Log.d(TAG, "Rows updated: $rowsAffected")
+    }
+
+    private fun testUpdate() {
+        val values = ContentValues().apply {
+            put(TasksContract.Columns.TASK_NAME, "Content Provider")
+            put(TasksContract.Columns.TASK_DESCRIPTION, "Testing Update")
+        }
+
+        val taskUri = TasksContract.buildUriFromId(4)
+        val rowsAffected = contentResolver.update(taskUri, values, null, null)
+        Log.d(TAG, "Rows updated: $rowsAffected")
     }
 
     private fun testInsert() {
