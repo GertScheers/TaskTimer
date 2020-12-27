@@ -3,8 +3,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.gitje.tasktimer.MainActivity">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
+        android:id="@+id/menuMain_AddTask"
+        android:icon="@android:drawable/ic_menu_add"
+        android:orderInCategory="10"
+        android:title="@string/menuTitle_AddTask"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menuMain_ShowDurations"
+        android:icon="@android:drawable/ic_menu_view"
+        android:orderInCategory="20"
+        android:title="@string/menuTitle_ShowDurations"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menuMain_ShowSetings"
+        android:orderInCategory="30"
         android:title="@string/action_settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menuMain_ShowAbout"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:orderInCategory="40"
+        android:title="@string/menuTitle_ShowAbout"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menuMain_Generate"
+        android:orderInCategory="50"
+        android:title="@string/menuTitle_Generate"
+        android:visible="false"
         app:showAsAction="never" />
 </menu>
