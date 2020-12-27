@@ -16,4 +16,7 @@
     <string name="menuTitle_ShowDurations">Durations Report</string>
     <string name="menuTitle_ShowAbout">About Tasktimer</string>
     <string name="menuTitle_Generate">Generate Data</string>
+    <string name="no_task_selected_message">No task selected!</string>
+    <string name="edit_button_description">Button to edit a task\'s detail</string>
+    <string name="delete_button_description">Button to delete a task</string>
 </resources>
