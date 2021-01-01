@@ -6,7 +6,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <include
-        layout="@layout/fragment_first"
+        layout="@layout/fragment_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
