@@ -1,52 +1,40 @@
 package com.gitje.tasktimer
 
 import android.content.ContentValues
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import kotlinx.android.synthetic.main.content_main.*
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
+    //Whether or not the activity is in two-pane mode. Landscape / portrait
+    private var mTwoPane = false;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        //testInsert()
-        //testUpdate()
-        //testUpdateBulk()
-        //testDelete()
-        //testDeleteBulk()
+        //Get device orientation, landscape = true, portrait = false
+        mTwoPane = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-        val projection =
-            arrayOf(TasksContract.Columns.TASK_NAME, TasksContract.Columns.TASK_SORT_ORDER)
-        val sortColumn = TasksContract.Columns.TASK_SORT_ORDER
-
-        //val cursor = contentResolver.query(TasksContract.CONTENT_URI, projection, null, null, sortColumn)
-        val cursor = contentResolver.query(TasksContract.CONTENT_URI, null, null, null, sortColumn)
-        Log.d(TAG, "***************************")
-        cursor.use {
-            while (it?.moveToNext()!!) {
-                //cycle through records
-                with(cursor) {
-                    val id = this?.getLong(0)
-                    val name = this?.getString(1)
-                    val description = this?.getString(2)
-                    val sortOrder = this?.getString(3)
-                    val result =
-                        "ID: $id | Name: $name | Description: $description | Sort order: $sortOrder |"
-                    Log.d(TAG, "onCreate: reading data $result")
-                }
-            }
+        //get fragments and set up the panes correctly
+        var fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        if(fragment != null) {
+            showEditPane()
+        } else {
+            task_details_container.visibility = if(mTwoPane) View.INVISIBLE else View.GONE
+            mainFragment.view?.visibility = View.VISIBLE
         }
-
-        Log.d(TAG, "***************************")
 
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -54,54 +42,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun testDeleteBulk() {
-        val selection = TasksContract.Columns.TASK_SORT_ORDER + " = ?"
-        val selectionArgs = arrayOf("5")
-
-        val rowsAffected = contentResolver.delete(TasksContract.CONTENT_URI, selection, selectionArgs)
-        Log.d(TAG, "Rows deleted: $rowsAffected")
+    private fun showEditPane(){
+        //Right-hand fragment exists
+        task_details_container.visibility = View.VISIBLE
+        //Hide left-hand pane when in portrait
+        mainFragment.view?.visibility = if (mTwoPane) View.VISIBLE else View.GONE
     }
 
-    private fun testDelete() {
-        val taskUri = TasksContract.buildUriFromId(2)
-        val rowsAffected = contentResolver.delete(taskUri, null, null)
-        Log.d(TAG, "Rows deleted: $rowsAffected")
-    }
-
-    private fun testUpdateBulk() {
-        val values = ContentValues().apply {
-            put(TasksContract.Columns.TASK_SORT_ORDER, "5")
-            put(TasksContract.Columns.TASK_DESCRIPTION, "Testing")
-        }
-        val selection = TasksContract.Columns.TASK_SORT_ORDER + " = ?"
-        val selectionArgs = arrayOf("1")
-
-        //val taskUri = TasksContract.buildUriFromId(4)
-        val rowsAffected = contentResolver.update(TasksContract.CONTENT_URI, values, selection, selectionArgs)
-        Log.d(TAG, "Rows updated: $rowsAffected")
-    }
-
-    private fun testUpdate() {
-        val values = ContentValues().apply {
-            put(TasksContract.Columns.TASK_NAME, "Content Provider")
-            put(TasksContract.Columns.TASK_DESCRIPTION, "Testing Update")
+    private fun removeEditPane(fragment: Fragment? = null) {
+        Log.d(TAG, "removeEdit called")
+        if (fragment != null) {
+            supportFragmentManager.beginTransaction()
+                .remove(fragment)
+                .commit()
         }
 
-        val taskUri = TasksContract.buildUriFromId(4)
-        val rowsAffected = contentResolver.update(taskUri, values, null, null)
-        Log.d(TAG, "Rows updated: $rowsAffected")
+        //Set the visibility of the right-hand pane
+        task_details_container.visibility = if (mTwoPane) View.INVISIBLE else View.GONE
+        //And show left-hand pane
+        mainFragment.view?.visibility = View.VISIBLE
     }
 
-    private fun testInsert() {
-        val values = ContentValues().apply {
-            put(TasksContract.Columns.TASK_NAME, "New Task 1")
-            put(TasksContract.Columns.TASK_DESCRIPTION, "Description 1")
-            put(TasksContract.Columns.TASK_SORT_ORDER, "2")
-        }
-
-        val uri = contentResolver.insert(TasksContract.CONTENT_URI, values)
-        Log.d(TAG, "New row id ( in uri ) is $uri")
-        Log.d(TAG, "id (in uri) is ${TasksContract.getId(uri!!)}")
+    override fun onSaveClicked(){
+        Log.d(TAG, "onSaveClicked: called")
+        var fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        removeEditPane(fragment)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -114,9 +79,23 @@ class MainActivity : AppCompatActivity() {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.menuMain_ShowSetings -> true
-            else -> super.onOptionsItemSelected(item)
+        when (item.itemId) {
+            R.id.menuMain_AddTask -> taskEditRequest(null)
         }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun taskEditRequest(task: Task?) {
+        Log.d(TAG, "taskEditRequest: starts")
+
+        //Create a new fragment to edit the task
+        val newFragment = AddEditFragment.newInstance(task)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.task_details_container, newFragment)
+            .commit()
+
+        showEditPane()
+
+        Log.d(TAG, "Exiting taskEditRequest")
     }
 }

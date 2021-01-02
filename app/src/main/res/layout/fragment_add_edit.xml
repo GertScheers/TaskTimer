@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/task_details_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -10,9 +11,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/addEdit_name_hint"
+        android:importantForAutofill="no"
         android:inputType="textNoSuggestions"
-        android:maxLength="64"
-        android:importantForAutofill="no" />
+        android:maxLength="64" />
 
     <EditText
         android:id="@+id/addEdit_description"
@@ -20,9 +21,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/addEdit_description_hint"
+        android:importantForAutofill="no"
         android:inputType="textMultiLine|textPersonName"
-        android:maxLength="256"
-        android:importantForAutofill="no" />
+        android:maxLength="256" />
 
     <EditText
         android:id="@+id/addEdit_sortOrder"
@@ -30,9 +31,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/addEdit_sort_hint"
+        android:importantForAutofill="no"
         android:inputType="number"
-        android:maxLength="9"
-        android:importantForAutofill="no" />
+        android:maxLength="9" />
 
     <Button
         android:id="@+id/addEdit_save"

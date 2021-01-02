@@ -1,11 +1,13 @@
 package com.gitje.tasktimer
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.android.synthetic.main.fragment_add_edit.*
 
 private const val TAG = "AddEditFragment"
 // TODO: Rename parameter arguments, choose names that match
@@ -19,6 +21,7 @@ private const val ARG_TASK = "task"
  */
 class AddEditFragment : Fragment() {
     private var task: Task? = null
+    private var listener: OnSaveClicked? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "OnCreate: starts")
@@ -33,6 +36,34 @@ class AddEditFragment : Fragment() {
         Log.d(TAG, "OnCreateView: starts")
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add_edit, container, false)
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onActivityCreated: starts")
+        super.onActivityCreated(savedInstanceState)
+        addEdit_save.setOnClickListener {
+            listener?.onSaveClicked()
+        }
+    }
+
+    override fun onAttach(context: Context) {
+        Log.d(TAG, "onAttach: starts")
+        super.onAttach(context)
+        if (context is OnSaveClicked) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement OnSaveClicked")
+        }
+    }
+
+    override fun onDetach() {
+        Log.d(TAG, "onDetach: starts")
+        super.onDetach()
+        listener = null
+    }
+
+    interface OnSaveClicked {
+        fun onSaveClicked()
     }
 
     companion object {
