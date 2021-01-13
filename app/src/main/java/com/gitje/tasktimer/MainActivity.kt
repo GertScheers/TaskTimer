@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
     private var mTwoPane = false;
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate starts")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -28,11 +29,11 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
         mTwoPane = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         //get fragments and set up the panes correctly
-        var fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
-        if(fragment != null) {
+        val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        if (fragment != null) {
             showEditPane()
         } else {
-            task_details_container.visibility = if(mTwoPane) View.INVISIBLE else View.GONE
+            task_details_container.visibility = if (mTwoPane) View.INVISIBLE else View.GONE
             mainFragment.view?.visibility = View.VISIBLE
         }
 
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
         }
     }
 
-    private fun showEditPane(){
+    private fun showEditPane() {
         //Right-hand fragment exists
         task_details_container.visibility = View.VISIBLE
         //Hide left-hand pane when in portrait
@@ -61,11 +62,13 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
         task_details_container.visibility = if (mTwoPane) View.INVISIBLE else View.GONE
         //And show left-hand pane
         mainFragment.view?.visibility = View.VISIBLE
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
     }
 
-    override fun onSaveClicked(){
+    override fun onSaveClicked() {
         Log.d(TAG, "onSaveClicked: called")
-        var fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
         removeEditPane(fragment)
     }
 
@@ -81,6 +84,11 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.menuMain_AddTask -> taskEditRequest(null)
+            android.R.id.home -> {
+                Log.d(TAG, "onOptionsItemSelected: Home button tapped")
+                val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+                removeEditPane(fragment)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -97,5 +105,13 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
         showEditPane()
 
         Log.d(TAG, "Exiting taskEditRequest")
+    }
+
+    override fun onBackPressed() {
+        val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        if (fragment == null || mTwoPane)
+            super.onBackPressed()
+        else
+            removeEditPane(fragment)
     }
 }
