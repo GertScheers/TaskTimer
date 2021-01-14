@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.fragment_add_edit.*
 
 private const val TAG = "AddEditFragment"
+
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_TASK = "task"
@@ -39,13 +40,30 @@ class AddEditFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_add_edit, container, false)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d(TAG, "onViewCreated: called")
+        if(savedInstanceState == null) {
+            //To work around smart-cast error because mutable
+            val task = task
+            if (task != null) {
+                Log.d(TAG, "onViewCreated: Task details found, editing task ${task.id}")
+                addEdit_name.setText(task.name)
+                addEdit_description.setText(task.description)
+                addEdit_sortOrder.setText(task.sortOrder.toString())
+            } else {
+                //No task, so the template stays empty
+                Log.d(TAG, "onViewCreated: No arguments, adding new record")
+            }
+        }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         Log.d(TAG, "onActivityCreated: starts")
         super.onActivityCreated(savedInstanceState)
 
         //Home/back button for the fragment. Commented out parts is for when you want to change multiple things
         //val listener = listener
-        if(listener is AppCompatActivity) {
+        if (listener is AppCompatActivity) {
             //val actionBar = listener.supportActionBar
             val actionBar = (listener as AppCompatActivity?)?.supportActionBar
             actionBar?.setDisplayHomeAsUpEnabled(true)
