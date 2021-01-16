@@ -1,5 +1,6 @@
 package com.gitje.tasktimer
 
+import android.content.ContentValues
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -42,7 +43,7 @@ class AddEditFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.d(TAG, "onViewCreated: called")
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             //To work around smart-cast error because mutable
             val task = task
             if (task != null) {
@@ -54,6 +55,42 @@ class AddEditFragment : Fragment() {
                 //No task, so the template stays empty
                 Log.d(TAG, "onViewCreated: No arguments, adding new record")
             }
+        }
+    }
+
+    private fun saveTask() {
+        //Update the database IF a change has been made
+        val sortOrder = if (addEdit_sortOrder.text.isNotEmpty())
+            Integer.parseInt(addEdit_sortOrder.text.toString())
+        else 0
+        val values = ContentValues()
+        val task = task
+
+        if(task!=null) {
+            Log.d(TAG, "saveTask: updating existing task")
+            if(addEdit_name.text.toString() != task.name){
+                values.put(TasksContract.Columns.TASK_NAME, addEdit_name.text.toString())
+            }
+            if(addEdit_description.text.toString() != task.description){
+                values.put(TasksContract.Columns.TASK_DESCRIPTION, addEdit_description.text.toString())
+            }
+            if(sortOrder != task.sortOrder){
+                values.put(TasksContract.Columns.TASK_SORT_ORDER, sortOrder)
+            }
+
+            if(values.size() != 0) {
+                Log.d(TAG, "saveTask: Updating task")
+                activity?.contentResolver?.update(TasksContract.buildUriFromId(task.id),values, null,null)
+            }
+        } else {
+            //new record
+            Log.d(TAG, "saveTask: saving new task")
+            if(addEdit_name.text.isNotEmpty())
+                values.put(TasksContract.Columns.TASK_NAME, addEdit_name.text.toString())
+            if(addEdit_description.text.isNotEmpty())
+                values.put(TasksContract.Columns.TASK_DESCRIPTION, addEdit_description.text.toString())
+            values.put(TasksContract.Columns.TASK_SORT_ORDER, sortOrder)
+            activity?.contentResolver?.insert(TasksContract.CONTENT_URI, values)
         }
     }
 
@@ -70,6 +107,7 @@ class AddEditFragment : Fragment() {
         }
 
         addEdit_save.setOnClickListener {
+            saveTask()
             listener?.onSaveClicked()
         }
     }
