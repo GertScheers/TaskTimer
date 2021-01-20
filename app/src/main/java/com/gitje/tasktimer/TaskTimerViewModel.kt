@@ -10,6 +10,8 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 private const val TAG = "TaskTimerViewModel"
 
@@ -42,17 +44,25 @@ class TaskTimerViewModel(application: Application) : AndroidViewModel(applicatio
             TasksContract.Columns.TASK_DESCRIPTION,
             TasksContract.Columns.TASK_SORT_ORDER
         )
-        //Order by sort order > Name
-        val sortOrder =
-            "${TasksContract.Columns.TASK_SORT_ORDER}, ${TasksContract.Columns.TASK_NAME}"
-        val cursor = getApplication<Application>().contentResolver.query(
-            TasksContract.CONTENT_URI, projection, null, null, sortOrder
-        )
-        dataBaseCursor.postValue(cursor)
+        GlobalScope.launch {
+            //Order by sort order > Name
+            val sortOrder =
+                "${TasksContract.Columns.TASK_SORT_ORDER}, ${TasksContract.Columns.TASK_NAME}"
+            val cursor = getApplication<Application>().contentResolver.query(
+                TasksContract.CONTENT_URI, projection, null, null, sortOrder
+            )
+            dataBaseCursor.postValue(cursor)
+        }
     }
 
     fun deleteTask(taskId: Long) {
-        getApplication<Application>().contentResolver?.delete(TasksContract.buildUriFromId(taskId), null, null)
+        GlobalScope.launch {
+            getApplication<Application>().contentResolver?.delete(
+                TasksContract.buildUriFromId(
+                    taskId
+                ), null, null
+            )
+        }
     }
 
     override fun onCleared() {
