@@ -12,22 +12,44 @@ import java.lang.IllegalStateException
 
 class TaskViewHolder(override val containerView: View) : RecyclerView.ViewHolder(containerView),
     LayoutContainer {
+    fun bind(task: Task, listener: CursorRecyclerViewAdapter.OnTaskClickListener) {
+        containerView.tli_name.text = task.name
+        containerView.tli_description.text = task.description
+        containerView.tli_edit.visibility = View.VISIBLE
+        containerView.tli_delete.visibility = View.VISIBLE
 
+        containerView.tli_edit.setOnClickListener {
+            listener.onEditClick(task)
+        }
+        containerView.tli_delete.setOnClickListener {
+            listener.onDeleteClick(task)
+        }
+
+        containerView.setOnLongClickListener {
+            listener.onTaskLongClick(task)
+            true
+        }
+    }
 }
 
 private const val TAG = "CursorRVAdapter"
 
-class CursorRecyclerViewAdapter(private var cursor: Cursor?) :
+class CursorRecyclerViewAdapter(private var cursor: Cursor?, private val listener: OnTaskClickListener) :
     RecyclerView.Adapter<TaskViewHolder>() {
+
+    interface OnTaskClickListener {
+        fun onEditClick(task: Task)
+        fun onDeleteClick(task:Task)
+        fun onTaskLongClick(task: Task)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
-        Log.d(TAG, "onCreateViewHolder: new view requested")
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.task_list_items, parent, false)
         return TaskViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        Log.d(TAG, "onBindViewHolder: starts")
         val cursor = cursor //avoid smart-cast issues
         if (cursor == null || cursor.count == 0) {
             Log.d(TAG, "onBindViewHolder: providing instructions")
@@ -49,18 +71,14 @@ class CursorRecyclerViewAdapter(private var cursor: Cursor?) :
             //ID isn't set through constructor
             task.id = cursor.getLong(cursor.getColumnIndex(TasksContract.Columns.ID))
 
-            holder.itemView.tli_name.text = task.name
-            holder.itemView.tli_description.text = task.description
-            holder.itemView.tli_edit.visibility = View.VISIBLE ///TODO: add onClick
-            holder.itemView.tli_delete.visibility = View.VISIBLE ///TODO: add onClick
+            holder.bind(task, listener)
         }
     }
 
     override fun getItemCount(): Int {
-        Log.d(TAG, "getItemCount: starts")
         val cursor = cursor
 
-        return if(cursor == null || cursor.count==0)
+        return if (cursor == null || cursor.count == 0)
             1
         else cursor.count
     }
@@ -73,12 +91,12 @@ class CursorRecyclerViewAdapter(private var cursor: Cursor?) :
      * If the given new Cursor is the same instance as the previously set Cursor, null is also returned.
      */
 
-    fun swapCursor(newCursor: Cursor?) : Cursor? {
-        if(newCursor == cursor) return null
+    fun swapCursor(newCursor: Cursor?): Cursor? {
+        if (newCursor == cursor) return null
         val numItems = itemCount
         val oldCursor = cursor
         cursor = newCursor
-        if(newCursor != null)
+        if (newCursor != null)
             notifyDataSetChanged()
         else
             notifyItemRangeRemoved(0, numItems)

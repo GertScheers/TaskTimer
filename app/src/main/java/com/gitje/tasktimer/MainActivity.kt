@@ -15,9 +15,13 @@ import kotlinx.android.synthetic.main.content_main.*
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
+class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked, MainFragment.OnTaskEdit {
     //Whether or not the activity is in two-pane mode. Landscape / portrait
     private var mTwoPane = false;
+
+    override fun onTaskEdit(task: Task) {
+        taskEditRequest(task)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate starts")
