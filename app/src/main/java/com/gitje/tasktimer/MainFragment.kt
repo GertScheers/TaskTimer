@@ -61,7 +61,7 @@ class MainFragment : Fragment(), CursorRecyclerViewAdapter.OnTaskClickListener {
     }
 
     override fun onDeleteClick(task: Task) {
-        TODO("Not yet implemented")
+        viewModel.deleteTask(task.id)
     }
 
     override fun onTaskLongClick(task: Task) {
