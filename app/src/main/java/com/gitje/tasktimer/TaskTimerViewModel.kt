@@ -1,11 +1,13 @@
 package com.gitje.tasktimer
 
 import android.app.Application
+import android.content.ContentValues
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -53,6 +55,34 @@ class TaskTimerViewModel(application: Application) : AndroidViewModel(applicatio
             )
             dataBaseCursor.postValue(cursor)
         }
+    }
+
+    fun saveTask(task: Task) : Task {
+        val values = ContentValues()
+        if(task.name.isNotEmpty()) {
+            values.put(TasksContract.Columns.TASK_NAME, task.name)
+            values.put(TasksContract.Columns.TASK_DESCRIPTION, task.description)
+            values.put(TasksContract.Columns.TASK_SORT_ORDER, task.sortOrder)
+
+            if(task.id == 0L) {
+                //Non-existing task, make new entry
+                GlobalScope.launch {
+                    Log.d(TAG, "saveTask: Creating new entry")
+                    val uri = getApplication<Application>().contentResolver?.insert(TasksContract.CONTENT_URI, values)
+                    if(uri != null) {
+                        task.id = TasksContract.getId(uri)
+                            Log.d(TAG, "saveTask: new id is ${task.id}")
+                    }
+                }
+            } else {
+                //Modify existing task
+                GlobalScope.launch {
+                    Log.d(TAG, "saveTask: Modifying existing task")
+                    getApplication<Application>().contentResolver?.update(TasksContract.buildUriFromId(task.id), values, null, null)
+                }
+            }
+        }
+        return task
     }
 
     fun deleteTask(taskId: Long) {
