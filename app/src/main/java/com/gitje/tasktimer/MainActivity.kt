@@ -1,12 +1,13 @@
 package com.gitje.tasktimer
 
-import android.content.ContentValues
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
@@ -19,7 +20,9 @@ private const val DIALOG_ID_CANCEL_EDIT = 1
 class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked,
     MainFragment.OnTaskEdit, AppDialog.DialogEvents {
     //Whether or not the activity is in two-pane mode. Landscape / portrait
-    private var mTwoPane = false;
+    private var mTwoPane = false
+
+    private var aboutDialog: AlertDialog? = null
 
     override fun onTaskEdit(task: Task) {
         taskEditRequest(task)
@@ -90,6 +93,7 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked,
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.menuMain_AddTask -> taskEditRequest(null)
+            R.id.menuMain_ShowAbout -> showAboutDialog()
             android.R.id.home -> {
                 Log.d(TAG, "onOptionsItemSelected: Home button tapped")
                 val fragment = findFragmentById(R.id.task_details_container)
@@ -107,14 +111,38 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked,
         return super.onOptionsItemSelected(item)
     }
 
+    private fun showAboutDialog() {
+        val messageView = layoutInflater.inflate(R.layout.about, null, false)
+        val builder = AlertDialog.Builder(this)
+
+        //Calling these before the .create on line 122 is crucial
+        builder.setTitle(R.string.app_name)
+        builder.setIcon(R.mipmap.ic_launcher)
+
+        builder.setPositiveButton(R.string.ok) { _, _ ->
+            Log.d(TAG, "onClick: Entering messageView.onClick")
+            if (aboutDialog?.isShowing == true)
+                aboutDialog?.dismiss()
+        }
+
+        aboutDialog = builder.setView(messageView).create()
+        aboutDialog?.setCanceledOnTouchOutside(true) //True is default, but since we have no cancel button, it's better to make sure
+
+        /*Not ideal for dialogs where text is linked ( mail, websites, ... )
+        messageView.setOnClickListener {
+            Log.d(TAG, "Entering messageView.onClick")
+            if(aboutDialog != null && aboutDialog?.isShowing == true)
+                aboutDialog?.dismiss()
+        }*/
+
+        val aboutVersion = messageView.findViewById(R.id.about_version) as TextView
+        aboutVersion.text = BuildConfig.VERSION_NAME
+
+        aboutDialog?.show()
+    }
+
     private fun taskEditRequest(task: Task?) {
         Log.d(TAG, "taskEditRequest: starts")
-
-        //Create a new fragment to edit the task
-        /*val newFragment = AddEditFragment.newInstance(task)
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.task_details_container, newFragment)
-            .commit()*/
 
         showEditPane()
         replaceFragment(AddEditFragment.newInstance(task), R.id.task_details_container)
@@ -139,9 +167,16 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked,
     }
 
     override fun onPositiveDialogResult(dialogId: Int, args: Bundle) {
-        if(dialogId == DIALOG_ID_CANCEL_EDIT) {
+        if (dialogId == DIALOG_ID_CANCEL_EDIT) {
             val fragment = findFragmentById(R.id.task_details_container)
             removeEditPane(fragment)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (aboutDialog?.isShowing == true) {
+            aboutDialog?.dismiss()
         }
     }
 
