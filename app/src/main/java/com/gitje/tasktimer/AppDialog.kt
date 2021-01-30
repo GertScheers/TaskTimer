@@ -32,7 +32,7 @@ class AppDialog : AppCompatDialogFragment() {
 
         dialogEvents = try {
             parentFragment as DialogEvents
-        } catch (e: TypeCastException) {
+        } catch (e: NullPointerException) {
             try {
                 context as DialogEvents
             } catch (e: ClassCastException) {
