@@ -93,6 +93,10 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked,
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.menuMain_AddTask -> taskEditRequest(null)
+            R.id.menuMain_ShowSetings -> {
+                val dialog = SettingsDialog()
+                dialog.show(supportFragmentManager, null)
+            }
             R.id.menuMain_ShowAbout -> showAboutDialog()
             android.R.id.home -> {
                 Log.d(TAG, "onOptionsItemSelected: Home button tapped")
